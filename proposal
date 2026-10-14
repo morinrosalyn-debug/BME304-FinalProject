@@ -1,0 +1,73 @@
+##Proposal
+
+Part I: Introduction and Research Question
+Pancreatic ductal adenocarcinoma (PDAC) has a five-year survival rate of about 9%, largely
+because early disease is asymptomatic and most patients are diagnosed after surgery is no longer
+curative. Debernardi et al. evaluated a non-invasive urinary panel of LYVE1, REG1B, and TFF1,
+combined with age and creatinine in a logistic regression model [1]. However, the study reports
+uncertainty only at the group level, as confidence intervals around AUC, sensitivity, and
+specificity. It does not assess calibration, per-patient confidence, or which patients are
+misclassified. This matters because performance drops in the hardest comparisons: the AUC falls
+to 0.871 for benign disease vs. early PDAC and to 0.818 for chronic pancreatitis vs. early PDAC
+[1]. Chronic pancreatitis is both a risk factor for PDAC and a condition that can resemble it. An
+“elevated” result given without any indication of confidence could lead to unnecessary invasive
+follow-up, while a confident but wrong “normal” result could delay diagnosis. The study also
+had few stage I–IIA samples. We will test whether prediction uncertainty can flag these
+unreliable classifications.
+Research Question
+Can predictive uncertainty estimates identify unreliable classifications of early-stage pancreatic
+cancer from urinary biomarkers, particularly when distinguishing cancer from benign
+hepatobiliary disease?
+●
+Justification: This question goes beyond summary statistics: it requires building and
+validating predictive models, estimating per-sample uncertainty, and testing whether
+uncertainty predicts errors, none of which the original study reports. It is feasible because
+the data being used is public and small enough for repeated model fitting. Lastly, it is
+important because a screening tool that cannot signal when it is unsure could lead to
+unnecessary invasive procedures or missed early cancers.
+Part II: Data Sources
+We have accessed and assessed the study’s public S1 Table, journal.pmed.1003489.s009.xlsx,
+through its supporting information [1]. It contains 590 sample records: 183 controls, 208 benign
+disease samples, and 199 PDAC samples. Restricting cancer cases to stages I-II leaves 493
+records, including 102 cancer samples. Only 16 are stage I, so stage I alone would be too small
+for the primary analysis.
+Age, creatinine, LYVE1, REG1B, and TFF1 are complete for all 493 eligible records. Sample
+IDs are unique, although the file lacks a separate participant identifier. CA19-9 and REG1A are
+missing in 213 and 257 eligible records, respectively. The diagnosis and stage will define
+1
+outcomes and eligibility; they will not be predictors. Cohort, collection site, and benign
+diagnoses will support secondary checks. The small feature set and complete core measurements
+make repeated model fitting practical.
+Part III: Proposed Methods
+We will train a logistic regression model using age, creatinine, LYVE1, REG1B, and TFF1 to
+distinguish stage I–II pancreatic cancer from healthy controls and benign disease. Concentration
+measurements will be log-transformed, and predictors will be standardized using training data
+only. We will evaluate performance using stratified five-fold cross-validation, reporting AUROC,
+sensitivity, specificity, and balanced accuracy, with the classification threshold chosen within
+each training fold. We will assess calibration with a calibration curve.
+For each held-out sample, we will estimate uncertainty from the variation in predicted
+probabilities across 200 bootstrap models trained within each training fold. We will test whether
+higher uncertainty identifies incorrect predictions, and whether flagging uncertain cases reduces
+the error rate among the remaining predictions, while reporting how many cancer cases are
+flagged. We will compare this approach with proximity to the classification threshold, use a
+random forest as a secondary model, and examine errors among benign cases, particularly
+chronic pancreatitis, and performance across collection sites.
+Course Topics
+1. Logistic regression. We will reproduce the published logistic regression model on age,
+creatinine, LYVE1, REG1B, and TFF1. Concepts: log transformation, standardization, maximum
+likelihood estimation. Justification: This matches the original PancRISK model, so our results
+can be compared directly with the published AUCs. It also serves as the base model we refit on
+bootstrap samples to estimate uncertainty. Stage: data cleaning and data analysis.
+2. Data splitting and classification evaluation. We will use stratified five-fold cross-validation,
+fitting all preprocessing on training folds only in order to prevent data leakage. Concepts:
+stratified splitting, confusion matrices, AUROC, sensitivity, specificity, balanced accuracy, and
+threshold selection. Justification: cancer cases are a minority (102 of 493), so stratification and
+imbalance-aware metrics are needed for honest evaluation. Stage: data analysis.
+3. Ensembles and uncertainty. We will estimate per-sample uncertainty from the spread of
+predictions across 200 bootstrap models and compare it with distance to the classification
+threshold. We will also train a random forest as a secondary model. Concepts: bootstrapping and
+bagging, random forests, epistemic uncertainty, ensemble disagreement, calibration curves.
+Justification: This directly answers our research question. The random forest is a nonlinear
+model, so it tests whether the uncertainty findings hold beyond logistic regression. Stage: data
+analysis and final report.
+2
